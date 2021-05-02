@@ -1,6 +1,10 @@
 #pragma once
+#include "Player.hpp"
 
 namespace pandemic {
-	// typedef unsigned int UI;
-	
+	class Medic : public Player
+	{
+	public:
+		Medic(Board, City);
+	};
 }

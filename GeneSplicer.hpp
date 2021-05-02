@@ -1,6 +1,10 @@
 #pragma once
+#include "Player.hpp"
 
 namespace pandemic {
-	// typedef unsigned int UI;
-	
+	class GeneSplicer : public Player
+	{
+	public:
+		GeneSplicer(Board, City);
+	};
 }
