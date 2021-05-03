@@ -6,5 +6,6 @@ namespace pandemic {
 	{
 	public:
 		Researcher(Board, City);
+		~Researcher();
 	};
 }

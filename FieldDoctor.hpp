@@ -6,5 +6,6 @@ namespace pandemic {
 	{
 	public:
 		FieldDoctor(Board, City);
+		~FieldDoctor();
 	};
 }

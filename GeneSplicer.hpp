@@ -6,5 +6,6 @@ namespace pandemic {
 	{
 	public:
 		GeneSplicer(Board, City);
+		~GeneSplicer();
 	};
 }

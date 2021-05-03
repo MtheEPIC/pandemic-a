@@ -6,5 +6,6 @@ namespace pandemic {
 	{
 	public:
 		Dispatcher(Board, City);
+		~Dispatcher();
 	};
 }
