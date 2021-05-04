@@ -7,8 +7,8 @@ namespace pandemic {
 	typedef std::unordered_map<City, int> M;
 	class Board
 	{
-		M cities_pandemic_level;
 	public:
+		M cities_pandemic_level;
 		int& operator[](City);
 		bool is_clean();
 	};
