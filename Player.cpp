@@ -26,6 +26,10 @@ namespace pandemic {
 	{
 		return *this;
 	}
+	Player Player::treat()
+	{
+		return *this;
+	}
 	Player Player::treat(City)
 	{
 		return *this;
@@ -49,9 +53,5 @@ namespace pandemic {
 	std::string Player::role()
 	{
 		return "";
-	}
-	std::ostream& operator<<(std::ostream& os, const Board& dt)
-	{
-		return os;
 	}
 }

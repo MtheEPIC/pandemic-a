@@ -14,12 +14,12 @@ namespace pandemic {
 		Player take_card(City);
 		Player drive(City);
 		Player fly_direct(City);
-		Player treat(City);
+		Player treat();
+		Player treat(City); // for Virologist
 		Player fly_charter(City);
 		Player build();
 		Player fly_shuttle(City);
 		Player discover_cure(Color);
 		std::string role();
 	};
-	std::ostream& operator<<(std::ostream& os, const Board& dt);
 }
