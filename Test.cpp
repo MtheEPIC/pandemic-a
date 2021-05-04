@@ -45,6 +45,85 @@ TEST_CASE("is_clean")
 	CHECK_EQ(game_board.is_clean(), false);
 }
 
+TEST_CASE("player-drive")
+{
+	Board game_board;
+	OperationsExpert player {game_board, City::Atlanta};
+	
+	// drive to the same city
+	CHECK_THROWS(player.drive(City::Atlanta));
+	// drive to the near city
+	CHECK_NOTHROW(player.drive(City::Chicago));
+	// drive to the far city
+	CHECK_THROWS(player.drive(City::HongKong));
+}
+
+TEST_CASE("player-fly_direct")
+{
+	Board game_board;
+	OperationsExpert player {game_board, City::Atlanta};
+	
+	// fly with no card
+	CHECK_THROWS(player.fly_direct(City::HongKong));
+	// fly to same city
+	player.take_card(City::Atlanta);
+	CHECK_THROWS(player.fly_direct(City::Atlanta));
+	// fly with card
+	player.take_card(City::HongKong);
+	CHECK_NOTHROW(player.fly_direct(City::HongKong));
+}
+
+TEST_CASE("Dispatcher-fly_direct")
+{
+	Board game_board;
+	Dispatcher player {game_board, City::Atlanta};
+	
+	// fly with no card
+	CHECK_THROWS(player.fly_direct(City::HongKong));
+	// fly to same city
+	player.take_card(City::Atlanta);
+	CHECK_THROWS(player.fly_direct(City::Atlanta));
+	// fly with card
+	player.take_card(City::HongKong);
+	CHECK_NOTHROW(player.fly_direct(City::HongKong));
+	// fly as Dispatcher
+	create_research_station(game_board, City::HongKong);
+	CHECK_NOTHROW(player.fly_direct(City::Paris));
+}
+
+TEST_CASE("player-fly_charter")
+{
+	Board game_board;
+	OperationsExpert player {game_board, City::Atlanta};
+	
+	// fly with no card
+	CHECK_THROWS(player.fly_charter(City::HongKong));
+	// fly to same city
+	player.take_card(City::Atlanta);
+	CHECK_THROWS(player.fly_charter(City::Atlanta));
+	// fly with card
+	CHECK_NOTHROW(player.fly_charter(City::HongKong));
+	// fly with spent card
+	CHECK_THROWS(player.fly_charter(City::Paris));
+}
+
+TEST_CASE("player-fly_shuttle")
+{
+	Board game_board;
+	OperationsExpert player {game_board, City::Atlanta};
+	
+	// fly with no station
+	CHECK_THROWS(player.fly_shuttle(City::HongKong));
+	// fly to same city
+	create_research_station(game_board, City::Atlanta);
+	CHECK_THROWS(player.fly_shuttle(City::Atlanta));
+	// fly with no destination station
+	CHECK_THROWS(player.fly_shuttle(City::HongKong));
+	// fly as with 2 stations
+	create_research_station(game_board, City::HongKong);
+	CHECK_NOTHROW(player.fly_shuttle(City::HongKong));
+}
+
 TEST_CASE("player-treat")
 {
 	Board game_board;
