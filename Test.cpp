@@ -8,9 +8,25 @@
 #include "Medic.hpp"
 #include "Scientist.hpp"
 #include "GeneSplicer.hpp"
+#include "Researcher.hpp"
+
+#include "Dispatcher.hpp"
 
 using namespace pandemic;
 using namespace std;
+
+void create_research_station(Board game_board, City city)
+{
+	OperationsExpert player {game_board, city};
+	player.build();
+}
+
+void create_cure(Board game_board)
+{
+	Researcher player {game_board, City::Atlanta};
+	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago).take_card(City::Montreal);
+	player.discover_cure(Color::Blue);
+}
 
 TEST_CASE("is_clean")
 {
@@ -153,6 +169,44 @@ TEST_CASE("FieldDoctor-treat")
 	CHECK_EQ(game_board.is_clean(), false);
 }
 
+TEST_CASE("player-build")
+{
+	Board game_board;
+	Virologist player {game_board, City::Atlanta};
+	
+	// build with no cards
+	CHECK_THROWS(player.build());
+	// build with wrong card
+	player.take_card(City::Chicago);
+	CHECK_THROWS(player.build());
+	// build with right card
+	player.take_card(City::Atlanta);
+	CHECK_NOTHROW(player.build());
+	// check card amount
+	CHECK_EQ(player.cards.size(), 1);
+	// try to build again
+	player.take_card(City::Atlanta);
+	CHECK_NOTHROW(player.build());
+	CHECK_EQ(player.cards.size(), 2);
+}
+
+TEST_CASE("OperationsExpert-build")
+{
+	Board game_board;
+	OperationsExpert player {game_board, City::Atlanta};
+	
+	// build with no cards
+	CHECK_NOTHROW(player.build());
+	// build with wrong card
+	player.take_card(City::Chicago);
+	CHECK_NOTHROW(player.build());
+	// build with right card
+	player.take_card(City::Atlanta);
+	CHECK_NOTHROW(player.build());
+	// check card amount
+	CHECK_EQ(player.cards.size(), 2);
+}
+
 TEST_CASE("Medic-treat")
 {
 	Board game_board;
@@ -198,6 +252,7 @@ TEST_CASE("player-discover_cure")
 {
 	Board game_board;
 	OperationsExpert player {game_board, City::Atlanta};
+	create_research_station(game_board, City::Atlanta);
 	
 	// try to discover a cure with 4 cards
 	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago);
@@ -209,11 +264,15 @@ TEST_CASE("player-discover_cure")
 	player.take_card(City::Montreal);
 	CHECK_NOTHROW(player.discover_cure(Color::Blue));
 	// check if player gave the cards back
-	CHECK_EQ(game_board.cities_pandemic_level.size(), 1);
+	CHECK_EQ(player.cards.size(), 1);
 	// try to discover a cure twice
 	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago).take_card(City::Montreal);
-	CHECK_NOTHROW(player.discover_cure(Color::Blue)); // keep the cards in hand
-	CHECK_EQ(game_board.cities_pandemic_level.size(), 6);
+	CHECK_NOTHROW(player.discover_cure(Color::Blue));
+	CHECK_EQ(player.cards.size(), 6);
+	// try to create a cure with no station
+	player.drive(City::Miami);
+	player.take_card(City::Miami).take_card(City::MexicoCity).take_card(City::LosAngeles).take_card(City::Lima).take_card(City::Bogota);
+	CHECK_THROWS(player.discover_cure(Color::Yellow));
 }
 
 TEST_CASE("Scientist-discover_cure")
@@ -231,17 +290,21 @@ TEST_CASE("Scientist-discover_cure")
 	player.take_card(City::Montreal);
 	CHECK_NOTHROW(player.discover_cure(Color::Blue));
 	// check if player gave the cards back
-	CHECK_EQ(game_board.cities_pandemic_level.size(), 1);
+	CHECK_EQ(player.cards.size(), 1);
 	// try to discover a cure twice
 	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Montreal);
-	CHECK_NOTHROW(player.discover_cure(Color::Blue)); // keep the cards in hand
-	CHECK_EQ(game_board.cities_pandemic_level.size(), 5);
+	CHECK_NOTHROW(player.discover_cure(Color::Blue));
+	CHECK_EQ(player.cards.size(), 5);
+	// try to create a cure with no station
+	player.drive(City::Miami);
+	player.take_card(City::Miami).take_card(City::MexicoCity).take_card(City::LosAngeles).take_card(City::Lima).take_card(City::Bogota);
+	CHECK_THROWS(player.discover_cure(Color::Yellow));
 }
 
 TEST_CASE("GeneSplicer-discover_cure")
 {
 	Board game_board;
-	OperationsExpert player {game_board, City::Atlanta};
+	GeneSplicer player {game_board, City::Atlanta}; //add Researcher station
 	
 	// try to discover a cure with 4 cards
 	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago);
@@ -250,18 +313,49 @@ TEST_CASE("GeneSplicer-discover_cure")
 	player.take_card(City::HongKong);
 	CHECK_NOTHROW(player.discover_cure(Color::Blue));
 	// check if player gave the cards back
-	CHECK_EQ(game_board.cities_pandemic_level.size(), 0);
+	CHECK_EQ(player.cards.size(), 0);
 	// try to discover a cure twice
 	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago).take_card(City::Montreal);
-	CHECK_NOTHROW(player.discover_cure(Color::Blue)); // keep the cards in hand
-	CHECK_EQ(game_board.cities_pandemic_level.size(), 5);
+	CHECK_NOTHROW(player.discover_cure(Color::Blue));
+	CHECK_EQ(player.cards.size(), 5);
+	// try to create a cure with no station
+	player.drive(City::Miami);
+	player.take_card(City::Miami).take_card(City::MexicoCity).take_card(City::LosAngeles).take_card(City::Lima).take_card(City::Bogota);
+	CHECK_THROWS(player.discover_cure(Color::Yellow));
 }
+
+TEST_CASE("Researcher-discover_cure")
+{
+	Board game_board;
+	Researcher player {game_board, City::Atlanta};
+	
+	// try to discover a cure with 4 cards
+	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago);
+	CHECK_THROWS(player.discover_cure(Color::Blue));
+	// try to discover a cure with 5 cards of different colors
+	player.take_card(City::HongKong);
+	CHECK_THROWS(player.discover_cure(Color::Blue));
+	// try to discover a cure with 5 cards of the same color
+	player.take_card(City::Montreal);
+	CHECK_NOTHROW(player.discover_cure(Color::Blue));
+	// check if player gave the cards back
+	CHECK_EQ(player.cards.size(), 1);
+	// try to discover a cure twice
+	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago).take_card(City::Montreal);
+	CHECK_NOTHROW(player.discover_cure(Color::Blue));
+	CHECK_EQ(player.cards.size(), 6);
+	// try to create a cure with no station
+	player.drive(City::Miami);
+	player.take_card(City::Miami).take_card(City::MexicoCity).take_card(City::LosAngeles).take_card(City::Lima).take_card(City::Bogota);
+	CHECK_NOTHROW(player.discover_cure(Color::Yellow));
+}
+
 TEST_CASE("player-treat-cure")
 {
 	Board game_board;
 	OperationsExpert player {game_board, City::Atlanta};
-	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago).take_card(City::Montreal);
-	player.discover_cure(Color::Blue);
+	create_research_station(game_board, City::Atlanta);
+	create_cure(game_board);
 	
 	// treat a city you're in
 	game_board[City::Atlanta] = 1;
@@ -277,8 +371,8 @@ TEST_CASE("Medic-treat-cure")
 {
 	Board game_board;
 	Medic player {game_board, City::Atlanta};
-	player.take_card(City::Atlanta).take_card(City::Washington).take_card(City::NewYork).take_card(City::Chicago).take_card(City::Montreal);
-	player.discover_cure(Color::Blue);
+	create_research_station(game_board, City::Atlanta);
+	create_cure(game_board);
 	
 	// move to an infected city
 	game_board[City::HongKong] = 0;
