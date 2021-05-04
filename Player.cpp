@@ -2,11 +2,11 @@
 #include "Player.hpp"
 
 namespace pandemic {
-	Player::Player(Board game_board, City init_city)
+	Player::Player(Board &game_board, City init_city)
 	{
 		
 	}
-	Player::Player(Board game_board, City init_city, int discover_cure_cards)
+	Player::Player(Board &game_board, City init_city, int discover_cure_cards)
 	{
 		
 	}
@@ -50,6 +50,8 @@ namespace pandemic {
 	{
 		return "";
 	}
-	
-	std::ostream& operator<<(std::ostream& os, const Board& dt);
+	std::ostream& operator<<(std::ostream& os, const Board& dt)
+	{
+		return os;
+	}
 }
