@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include "Board.hpp"
 #include "City.hpp"
 #include "Color.hpp"
@@ -8,6 +9,7 @@ namespace pandemic {
 	class Player
 	{
 	public:
+		std::vector<City> cards;
 		Player(Board&, City);
 		Player(Board&, City, int);
 		~Player();
