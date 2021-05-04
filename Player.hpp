@@ -8,8 +8,8 @@ namespace pandemic {
 	class Player
 	{
 	public:
-		Player(Board, City);
-		Player(Board, City, int);
+		Player(Board&, City);
+		Player(Board&, City, int);
 		~Player();
 		Player take_card(City);
 		Player drive(City);
